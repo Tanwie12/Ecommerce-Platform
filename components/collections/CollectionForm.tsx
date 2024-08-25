@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import React from 'react';
 import { Separator } from '@/components/ui/separator';
 import { useForm } from 'react-hook-form';
@@ -26,14 +26,11 @@ const formSchema = z.object({
 });
 
 interface CollectionFormProps {
-  initialData?: CollectionType | null; //Must have "?" to make it optional
+  initialData?: CollectionType | null;
 }
 
 const CollectionForm: React.FC<CollectionFormProps> = ({ initialData }) => {
   const router = useRouter();
-  
-
-  
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -45,32 +42,37 @@ const CollectionForm: React.FC<CollectionFormProps> = ({ initialData }) => {
           image: "",
         },
   });
-  const { isSubmitting, isSubmitSuccessful, errors } = form.formState;
+  const { isSubmitting, errors } = form.formState;
+  
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement> | React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
     }
-  }
+  };
   
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      
       const url = initialData
         ? `/api/collections/${initialData._id}`
         : "/api/collections";
       const res = await fetch(url, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(values),
       });
+
+      const data = await res.json();
+
       if (res.ok) {
-        
         toast.success(`Collection ${initialData ? "updated" : "created"}`);
-        window.location.href = "/collections";
         router.push("/collections");
+      } else {
+        toast.error(data.message || "An error occurred");
       }
-    } catch (err) {
-      console.log("[collections_POST]", err);
-      toast.error("Something went wrong! Please try again.");
+    } catch (err: any) {
+      toast.error(err.message || "An error occurred");
     }
   };
 
@@ -79,7 +81,6 @@ const CollectionForm: React.FC<CollectionFormProps> = ({ initialData }) => {
       {initialData ? (
         <div className="flex items-center justify-between">
           <p className="text-heading2-bold">Edit Collection</p>
-         
         </div>
       ) : (
         <p className="text-heading2-bold">Create Collection</p>
@@ -145,6 +146,6 @@ const CollectionForm: React.FC<CollectionFormProps> = ({ initialData }) => {
       </Form>
     </div>
   );
-}
+};
 
 export default CollectionForm;

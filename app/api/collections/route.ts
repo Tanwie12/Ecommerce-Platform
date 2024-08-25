@@ -16,9 +16,9 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
 
     await connectToDB();
 
-    const { title, description, images } = await req.json();
+    const { title, description, image } = await req.json();
 
-    if (!title || !images) {
+    if (!title || !image) {
       return new NextResponse(JSON.stringify({ message: "Title and images are required" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
@@ -37,10 +37,8 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
     const newCollection = await Collection.create({
       title,
       description,
-      image:images,
-      
-    })
-
+      image
+    });
 
     await newCollection.save();
 
@@ -57,11 +55,11 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
   }
 };
 
-export const GET=async(req:NextRequest)=>{
+export const GET = async (req: NextRequest) => {
   try {
     await connectToDB();
-    const collections=await Collection.find().sort({createdAt:"desc"});
-    return NextResponse.json(collections,{status:200});
+    const collections = await Collection.find().sort({ createdAt: "desc" });
+    return NextResponse.json(collections, { status: 200 });
   } catch (error) {
     console.error("[Collection GET] Error:", error);
     return new NextResponse(JSON.stringify({ message: "Internal Server Error" }), {
@@ -69,4 +67,4 @@ export const GET=async(req:NextRequest)=>{
       headers: { "Content-Type": "application/json" },
     });
   }
-}
+};

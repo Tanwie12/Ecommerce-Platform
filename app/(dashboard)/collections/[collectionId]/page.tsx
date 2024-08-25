@@ -50,7 +50,7 @@ function CollectionDetails() {
         <h2>Products</h2>
         <ul>
           {collection.products.map(product => (
-            <li key={product._id}>{product.name}</li>
+            <li key={product._id}>{product.title}</li>
           ))}
         </ul>
       </div>

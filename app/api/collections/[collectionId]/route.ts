@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import  { auth } from "@clerk/nextjs/server";
 import { connectToDB } from "@/lib/mongoDB";
 import Collection from "@/lib/models/collectionModel";
+import Product from "@/lib/models/productModel";
 
 
 export const DELETE = async (
@@ -19,6 +20,7 @@ export const DELETE = async (
     await connectToDB();
     console.log("collectionId", params.collectionId);
     await Collection.findByIdAndDelete(params.collectionId);
+    await Product.updateMany({ collections: params.collectionId }, { $pull: { collections: params.collectionId } });
     return new NextResponse(JSON.stringify({ message: "Success" }), {
       status: 200,
     });

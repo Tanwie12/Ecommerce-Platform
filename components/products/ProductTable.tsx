@@ -25,11 +25,17 @@ import { PlusIcon, EyeIcon,DeleteIcon,EditIcon, EllipsisVertical as VerticalDots
 import { DeleteComponent } from "../custom ui/Delete";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Product from '@/lib/models/productModel';
+import Products from '../../app/(dashboard)/products/page';
 
 const columns = [
     {name: "Title", uid: "title", sortable: true},
-    {name: "Products", uid: "product"},
+    {name: "Category", uid: "category"},
+    {name: "collections", uid: "collections", sortable: true},
     {name: "STATUS", uid: "status", sortable: true},
+    {name: "Price", uid: "price", sortable: true},
+    {name: "Cost", uid: "cost", sortable: true},
+    
     {name: "ACTIONS", uid: "actions"},
   ];
   
@@ -47,14 +53,15 @@ const statusColorMap: Record<string, ChipProps["color"]> = {
     vacation: "warning",
   };
   
-  const INITIAL_VISIBLE_COLUMNS = ["title", "product", "status", "actions"];
+  const INITIAL_VISIBLE_COLUMNS = ["title", "category","colections", "status","price","cost", "actions"];
   
   
 type TableComponentProps = {
-    collections: CollectionType[];
+    products: ProductType[];
   };
   
-  const TableComponent: React.FC<TableComponentProps> = ({ collections }) => {
+  export const TableComponent: React.FC<TableComponentProps> = ({ products }) => {
+
     const router=useRouter()
     const [filterValue, setFilterValue] = React.useState("");
     const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set([]));
@@ -77,21 +84,21 @@ type TableComponentProps = {
     }, [visibleColumns]);
   
     const filteredItems = React.useMemo(() => {
-      let filteredCollections = [...collections];
+      let filteredproducts = [...products];
   
       if (hasSearchFilter) {
-        filteredCollections = filteredCollections.filter((collection) =>
-          collection.title.toLowerCase().includes(filterValue.toLowerCase()),
+        filteredproducts = filteredproducts.filter((product) =>
+          product.title.toLowerCase().includes(filterValue.toLowerCase()),
         );
       }
       if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
-        filteredCollections = filteredCollections.filter((collection) =>
-          Array.from(statusFilter).includes(collection.status),
+        filteredproducts = filteredproducts.filter((product) =>
+          Array.from(statusFilter).includes(product.status),
         );
       }
   
-      return filteredCollections;
-    }, [hasSearchFilter, statusFilter, filterValue, collections]);
+      return filteredproducts;
+    }, [hasSearchFilter, statusFilter, filterValue, products]);
   
     const pages = Math.ceil(filteredItems.length / rowsPerPage);
   
@@ -103,32 +110,49 @@ type TableComponentProps = {
     }, [page, filteredItems, rowsPerPage]);
   
     const sortedItems = React.useMemo(() => {
-      return [...items].sort((a: CollectionType, b: CollectionType) => {
-        const first = a[sortDescriptor.column as keyof CollectionType] as string | number;
-        const second = b[sortDescriptor.column as keyof CollectionType] as string | number;
+      return [...items].sort((a: ProductType, b: ProductType) => {
+        const first = a[sortDescriptor.column as keyof ProductType] as string | number;
+        const second = b[sortDescriptor.column as keyof ProductType] as string | number;
         const cmp = first < second ? -1 : first > second ? 1 : 0;
   
         return sortDescriptor.direction === "descending" ? -cmp : cmp;
       });
     }, [sortDescriptor, items]);
   
-    const renderCell = React.useCallback((collection: CollectionType, columnKey: React.Key) => {
-      const cellValue = collection[columnKey as keyof CollectionType];
+    const renderCell = React.useCallback((product: ProductType, columnKey: React.Key) => {
+      const cellValue = product[columnKey as keyof ProductType];
   
       switch (columnKey) {
         case "title":
           return (
             <User
-              avatarProps={{ radius: "lg", src: collection.image }}
+              avatarProps={{ radius: "lg", src: product.media[0] }}
               
               name={cellValue as string}
             />
           );
+        //   case "category":
+        // return (
+        //   <User
+        //     avatarProps={{ radius: "lg", src: product.media[0] }}
+        //     name={cellValue as string}
+        //   />
+        // );
+      case "collections":
+        return (
+          <div>
+            {product.collections.map((collection) => (
+              <Chip key={collection.title} className="capitalize" color="primary" size="sm" variant="flat">
+                {collection.title}
+              </Chip>
+            ))}
+          </div>
+        );
          
         case "status":
           return (
-            <Chip className="capitalize" color={statusColorMap[collection.status]} size="sm" variant="flat">
-              {cellValue as any}
+            <Chip className="capitalize" color={statusColorMap[product.status]} size="sm" variant="flat">
+              {cellValue as string}
             </Chip>
           );
           
@@ -151,7 +175,7 @@ type TableComponentProps = {
               </div>
               <div className="relative hidden md:flex items-center gap-3">
                 <Button isIconOnly size="sm" variant="light">
-                  <Link href={"/collections/"+collection._id} passHref>
+                  <Link href={"/products/"+product._id} passHref>
                   <Tooltip  content="Details">
                     <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
                       <EyeIcon />
@@ -160,15 +184,15 @@ type TableComponentProps = {
                   </Link>
                 </Button>
                 <Button isIconOnly size="sm" variant="light">
-                  <Link href={"/collections/"+collection._id+"/edit"} passHref>
-                  <Tooltip content="Edit collection">
+                  <Link href={"/products/"+product._id+"/edit"} passHref>
+                  <Tooltip content="Edit product">
                     <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
                       <EditIcon />
                     </span>
                   </Tooltip>
                   </Link>
                 </Button>
-                <DeleteComponent id={collection._id} />
+                <DeleteComponent id={product._id} />
               </div>
             </>
           );
@@ -271,7 +295,7 @@ type TableComponentProps = {
             </div>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-default-400 text-small">Total {collections.length} users</span>
+            <span className="text-default-400 text-small">Total {products.length} users</span>
             <label className="flex items-center text-default-400 text-small">
               Rows per page:
               <select
@@ -286,7 +310,7 @@ type TableComponentProps = {
           </div>
         </div>
       );
-    }, [filterValue, onSearchChange, statusFilter, visibleColumns, collections.length, onRowsPerPageChange, onClear]);
+    }, [filterValue, onSearchChange, statusFilter, visibleColumns, products.length, onRowsPerPageChange, onClear]);
   
     const bottomContent = React.useMemo(() => {
       return (
@@ -347,11 +371,10 @@ type TableComponentProps = {
         <TableBody emptyContent={"No users found"} items={sortedItems}>
           {(item) => (
             <TableRow key={item._id}>
-              {(columnKey) => <TableCell>{renderCell(item, columnKey) as any}</TableCell>}
+              {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
             </TableRow>
           )}
         </TableBody>
       </Table>
     );
   }
-  export default TableComponent;
