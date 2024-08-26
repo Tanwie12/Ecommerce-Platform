@@ -4,6 +4,7 @@ type CollectionType = {
   description: string;
   image: string;
   products: ProductType[];
+  status:any
 }
 
 type ProductType = {
@@ -20,6 +21,7 @@ type ProductType = {
   expense: number;
   createdAt: Date;
   updatedAt: Date;
+  status:any
 }
 
 type OrderColumnType = {
