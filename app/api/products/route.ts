@@ -13,7 +13,7 @@ export const POST=async(req: NextRequest)=>{
         const {title,description,media,category,collections,tags,sizes,price,cost,colors } = await req.json();
    
         if(!title || !description || !media || !category  || !price || !cost){
-            return NextResponse.json("Not enough data to create product fille all field", { status: 400 });
+            return NextResponse.json("Not enough dat to create product fille all field", { status: 400 });
         }
         const existingProduct=await Product.findOne({title})
         if(existingProduct){

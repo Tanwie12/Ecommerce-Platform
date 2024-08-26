@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import MultiText from '../custom ui/Multitext';
 import CollectionSelect from '../custom ui/Collectionselect';
+import MultiSelect from '../custom ui/MultiSelect';
 
 type Props = {};
 
@@ -43,9 +44,24 @@ interface ProductFormProps {
 
 const ProductForm: React.FC<ProductFormProps> = ({ initialData }) => {
   const router = useRouter();
-  
-  
-  
+  const [loading, setLoading] = React.useState(true);
+  const [collections, setCollections] = React.useState<CollectionType[]>([]);
+  const getCollections = async () => {
+    try {
+      const res = await fetch("/api/collections", {
+        method: "GET",
+      });
+      const data = await res.json();
+      setCollections(data);
+      setLoading(false);
+    } catch (err) {
+      console.log("[collections_GET]", err);
+      toast.error("Something went wrong! Please try again.");
+    }
+  };
+  React.useEffect(() => {
+    getCollections();
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -256,12 +272,21 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData }) => {
               <FormItem>
                 <FormLabel>Collection</FormLabel>
                 <FormControl>
-                  <CollectionSelect
-                    value={field.value}
-                    onChange={(collection) => field.onChange(collection)}
-                    InitialCollections={initialData?.collections}
-                    // onRemove={handleCollectionRemove}
-                  />
+                <MultiSelect
+                        placeholder="Collections"
+                        collections={collections}
+                        value={field.value}
+                        onChange={(_id) =>
+                          field.onChange([...field.value, _id])
+                        }
+                        onRemove={(idToRemove) =>
+                          field.onChange([
+                            ...field.value.filter(
+                              (collectionId) => collectionId !== idToRemove
+                            ),
+                          ])
+                        }
+                      />
                 </FormControl>
                 <FormMessage className="text-red-1" />
               </FormItem>
