@@ -3,68 +3,54 @@ import { connectToDB } from "@/lib/mongoDB";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
-export const POST = async (req: NextRequest): Promise<NextResponse> => {
+export const POST = async (req: NextRequest) => {
   try {
-    const { userId } = auth();
+    const { userId } = auth()
 
     if (!userId) {
-      return new NextResponse(JSON.stringify({ message: "Unauthorized" }), { 
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new NextResponse("Unauthorized", { status: 403 })
     }
 
-    await connectToDB();
+    await connectToDB()
 
-    const { title, description, image } = await req.json();
+    const { title, description, image } = await req.json()
 
-    if (!title || !image) {
-      return new NextResponse(JSON.stringify({ message: "Title and images are required" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    const existingCollection = await Collection.findOne({ title });
+    const existingCollection = await Collection.findOne({ title })
 
     if (existingCollection) {
-      return new NextResponse(JSON.stringify({ message: "Collection already exists" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new NextResponse("Collection already exists", { status: 400 })
+    }
+
+    if (!title || !image) {
+      return new NextResponse("Title and image are required", { status: 400 })
     }
 
     const newCollection = await Collection.create({
       title,
       description,
-      image
-    });
+      image,
+    })
 
-    await newCollection.save();
+    await newCollection.save()
 
-    return new NextResponse(JSON.stringify({ message: "Success" }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (error) {
-    console.error("[Collection POST] Error:", error);
-    return new NextResponse(JSON.stringify({ message: "Internal Server Error" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return NextResponse.json(newCollection, { status: 200 })
+  } catch (err) {
+    console.log("[collections_POST]", err)
+    return new NextResponse("Internal Server Error", { status: 500 })
   }
-};
+}
 
 export const GET = async (req: NextRequest) => {
   try {
-    await connectToDB();
-    const collections = await Collection.find().sort({ createdAt: "desc" });
-    return NextResponse.json(collections, { status: 200 });
-  } catch (error) {
-    console.error("[Collection GET] Error:", error);
-    return new NextResponse(JSON.stringify({ message: "Internal Server Error" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    await connectToDB()
+
+    const collections = await Collection.find().sort({ createdAt: "desc" })
+
+    return NextResponse.json(collections, { status: 200 })
+  } catch (err) {
+    console.log("[collections_GET]", err)
+    return new NextResponse("Internal Server Error", { status: 500 })
   }
-};
+}
+
+export const dynamic = "force-dynamic";
