@@ -32,7 +32,8 @@ const formSchema = z.object({
   price: z.coerce.number().min(0.1),
   colors: z.array(z.string()),
   cost: z.coerce.number().min(0.1),
-  collections: z.array(z.string())
+  collections: z.array(z.string()),
+  expense: z.coerce.number().min(0.1),
  
 });
 
@@ -43,27 +44,28 @@ interface ProductFormProps {
 const ProductForm: React.FC<ProductFormProps> = ({ initialData }) => {
   const router = useRouter();
   
-
+  
   
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData
-      ? {...initialData, collections:initialData.collections.map((c)=>c._id)}
+      ? {
+          ...initialData,
+          collections: initialData?.collections.map((collection) => collection._id) ?? []
+
+        }
       : {
           title: "",
           description: "",
           media: [],
           category: "",
-          products: [],
+          collections: [],
           tags: [],
           sizes: [],
-          price: 0.1,
           colors: [],
-          cost: 0.1,
-          collections: [],
-          
-   
+          price: 0.1,
+          expense: 0.1,
         },
   });
   const { isSubmitting, isSubmitSuccessful, errors } = form.formState;
