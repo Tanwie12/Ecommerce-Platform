@@ -1,41 +1,42 @@
-'use client'
-import React from 'react';
-import { Separator } from '@/components/ui/separator';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Button } from '@nextui-org/react';
-import { Input, Textarea } from '@nextui-org/react';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage, Form } from '../ui/form';
-import ImageUpload from '../custom ui/ImageUpload';
-import { useRouter } from 'next/navigation';
-import toast from 'react-hot-toast';
-import MultiText from '../custom ui/Multitext';
-import CollectionSelect from '../custom ui/Collectionselect';
-import MultiSelect from '../custom ui/MultiSelect';
+"use client";
 
-type Props = {};
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { useRouter } from "next/navigation";
+
+import { Separator } from "../ui/separator";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "../ui/textarea";
+import ImageUpload from "../custom ui/ImageUpload";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import Delete from "../custom ui/Delete";
+import MultiText from "../custom ui/Multitext";
+import MultiSelect from "../custom ui/MultiSelect";
+import Loader from "../custom ui/Loader";
+import { CldOgImage } from "next-cloudinary";
 
 const formSchema = z.object({
-  title: z.string().min(2, {
-    message: "Title must be at least 2 characters.",
-  }),
-  description: z.string().min(10, {
-    message: "Description must be at least 10 characters.",
-  }),
-  media: z.array(z.string()).min(1, {
-    message: "Please select at least 1 image.",
-  }),
+  title: z.string().min(2).max(20),
+  description: z.string().min(2).max(500).trim(),
+  media: z.array(z.string()),
   category: z.string(),
-  products: z.array(z.string()),
+  collections: z.array(z.string()),
   tags: z.array(z.string()),
   sizes: z.array(z.string()),
-  price: z.coerce.number().min(0.1),
   colors: z.array(z.string()),
-  cost: z.coerce.number().min(0.1),
-  collections: z.array(z.string()),
+  price: z.coerce.number().min(0.1),
   expense: z.coerce.number().min(0.1),
- 
 });
 
 interface ProductFormProps {
@@ -44,8 +45,10 @@ interface ProductFormProps {
 
 const ProductForm: React.FC<ProductFormProps> = ({ initialData }) => {
   const router = useRouter();
-  const [loading, setLoading] = React.useState(true);
-  const [collections, setCollections] = React.useState<CollectionType[]>([]);
+
+  const [loading, setLoading] = useState(true);
+  const [collections, setCollections] = useState<CollectionType[]>([]);
+
   const getCollections = async () => {
     try {
       const res = await fetch("/api/collections", {
@@ -59,7 +62,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData }) => {
       toast.error("Something went wrong! Please try again.");
     }
   };
-  React.useEffect(() => {
+
+  useEffect(() => {
     getCollections();
   }, []);
 
@@ -68,8 +72,9 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData }) => {
     defaultValues: initialData
       ? {
           ...initialData,
-          collections: initialData?.collections.map((collection) => collection._id) ?? []
-
+          collections: initialData.collections.map(
+            (collection) => collection._id
+          ),
         }
       : {
           title: "",
@@ -84,17 +89,66 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData }) => {
           expense: 0.1,
         },
   });
-  const { isSubmitting, isSubmitSuccessful, errors } = form.formState;
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement> | React.KeyboardEvent<HTMLTextAreaElement>) => {
+
+  const handleKeyPress = (
+    e:
+      | React.KeyboardEvent<HTMLInputElement>
+      | React.KeyboardEvent<HTMLTextAreaElement>
+  ) => {
     if (e.key === "Enter") {
       e.preventDefault();
     }
-  }
- 
+  };
+  const datas = [
+    {
+      title: "African Print Maxi Dress",
+      description: "A beautiful African print maxi dress, perfect for any occasion.",
+      media: [
+        "https://example.com/images/african-print-maxi-dress-front.jpg",
+        "https://example.com/images/african-print-maxi-dress-back.jpg",
+      ],
+      category: "Clothing",
+      collections: ["64a7b9c2f3e21c1a5d6789ab"], // Example ObjectId references
+      tags: ["african", "dress", "maxi", "fashion"],
+      price: 49.99,
+      cost: 25.00,
+      colors: ["Red", "Blue", "Yellow"],
+      sizes: ["S", "M", "L", "XL"],
+    },
+    {
+      title: "Handmade Beaded Necklace",
+      description: "A stunning handmade necklace with colorful beads.",
+      media: [
+        "https://example.com/images/beaded-necklace.jpg",
+      ],
+      category: "Jewelry",
+      collections: ["64a7b9c2f3e21c1a5d6789ac"], // Example ObjectId references
+      tags: ["handmade", "necklace", "beads", "accessories"],
+      price: 19.99,
+      cost: 8.50,
+      colors: ["Multicolor"],
+      sizes: ["One Size"],
+    },
+    {
+      title: "Leather Sandals",
+      description: "Comfortable and stylish leather sandals.",
+      media: [
+        "https://example.com/images/leather-sandals.jpg",
+      ],
+      category: "Footwear",
+      collections: ["64a7b9c2f3e21c1a5d6789ad"], // Example ObjectId references
+      tags: ["leather", "sandals", "footwear"],
+      price: 34.99,
+      cost: 15.00,
+      colors: ["Brown", "Black"],
+      sizes: ["7", "8", "9", "10", "11"],
+    },
+  ];
+  
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     console.log(values)
     try {
-      
+      setLoading(true);
       const url = initialData
         ? `/api/products/${initialData._id}`
         : "/api/products";
@@ -102,14 +156,11 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData }) => {
         method: "POST",
         body: JSON.stringify(values),
       });
-      const data=await res.json()
       if (res.ok) {
-        
+        setLoading(false);
         toast.success(`Product ${initialData ? "updated" : "created"}`);
         window.location.href = "/products";
         router.push("/products");
-      }else {
-        toast.error(data.message || "An error occurred");
       }
     } catch (err) {
       console.log("[products_POST]", err);
@@ -117,12 +168,14 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData }) => {
     }
   };
 
-  return (
+  return loading ? (
+    <Loader />
+  ) : (
     <div className="p-10">
       {initialData ? (
         <div className="flex items-center justify-between">
           <p className="text-heading2-bold">Edit Product</p>
-         
+          <Delete id={initialData._id} />
         </div>
       ) : (
         <p className="text-heading2-bold">Create Product</p>
@@ -200,7 +253,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData }) => {
                       placeholder="Price"
                       {...field}
                       onKeyDown={handleKeyPress}
-                      value={field.value ? field.value.toString() : ""}
                     />
                   </FormControl>
                   <FormMessage className="text-red-1" />
@@ -209,17 +261,16 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData }) => {
             />
             <FormField
               control={form.control}
-              name="cost"
+              name="expense"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cost ($)</FormLabel>
+                  <FormLabel>Expense ($)</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
-                      placeholder="Costs"
+                      placeholder="Expense"
                       {...field}
                       onKeyDown={handleKeyPress}
-                      value={field.value ? field.value.toString() : ""}
                     />
                   </FormControl>
                   <FormMessage className="text-red-1" />
@@ -265,14 +316,15 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData }) => {
                 </FormItem>
               )}
             />
-            <FormField
-            control={form.control}
-            name="collections"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Collection</FormLabel>
-                <FormControl>
-                <MultiSelect
+            {collections.length > 0 && (
+              <FormField
+                control={form.control}
+                name="collections"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Collections</FormLabel>
+                    <FormControl>
+                      <MultiSelect
                         placeholder="Collections"
                         collections={collections}
                         value={field.value}
@@ -287,11 +339,12 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData }) => {
                           ])
                         }
                       />
-                </FormControl>
-                <FormMessage className="text-red-1" />
-              </FormItem>
+                    </FormControl>
+                    <FormMessage className="text-red-1" />
+                  </FormItem>
+                )}
+              />
             )}
-          />
             <FormField
               control={form.control}
               name="colors"
@@ -346,14 +399,14 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData }) => {
             />
           </div>
 
-          <div className="flex gap-2">
-            <Button type="submit" isLoading={isSubmitting} color='primary'>
+          <div className="flex gap-10">
+            <Button type="submit" className="bg-blue-1 text-white">
               Submit
             </Button>
             <Button
-              
+              type="button"
               onClick={() => router.push("/products")}
-              color='danger'
+              className="bg-blue-1 text-white"
             >
               Discard
             </Button>
@@ -362,6 +415,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData }) => {
       </Form>
     </div>
   );
-}
+};
 
 export default ProductForm;

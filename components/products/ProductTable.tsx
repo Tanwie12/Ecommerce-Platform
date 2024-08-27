@@ -22,7 +22,7 @@ import {
     Tooltip
   } from "@nextui-org/react";
 import { PlusIcon, EyeIcon,DeleteIcon,EditIcon, EllipsisVertical as VerticalDotsIcon,SearchIcon,ChevronDownIcon } from "lucide-react";
-import { DeleteComponent } from "../custom ui/Delete";
+import Delete  from "../custom ui/Delete";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Product from '@/lib/models/productModel';
@@ -192,7 +192,7 @@ type TableComponentProps = {
                   </Tooltip>
                   </Link>
                 </Button>
-                <DeleteComponent id={product._id} />
+                <Delete id={product._id} />
               </div>
             </>
           );

@@ -20,7 +20,7 @@ type Props={
     id:string | number
 }
 
-export function DeleteComponent({id}:Props) {
+export default function Delete({id}:Props) {
     const router=useRouter()
     const [loading, setLoading] = React.useState(false)
 const onDelete=async () => {

@@ -11,7 +11,7 @@ function LeftSideBar({}: Props) {
     const pathName=usePathname()
   return (
     <div className='h-screen left-0 top-0 sticky p-10 flex bg-blue-2 flex-col gap-16 shadow-xl max-lg:hidden'>
-        <Image className='w-10 h-10' src='/logo.svg' alt='logo' width={100} height={100}/>
+        <Image className='w-10 h-10' src='/logo.png' alt='logo' width={100} height={100}/>
         <div className='flex  flex-col gap-10'>
             {   navLinks.map(link => (
                 <Link href={link.url} key={link.label} className={`flex flex-row text-body-medium items-center gap- ${pathName===link.url ? "text-blue-1" : "" }`}>

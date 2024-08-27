@@ -1,0 +1,46 @@
+const products = [
+    {
+      title: "African Print Maxi Dress",
+      description: "A beautiful African print maxi dress, perfect for any occasion.",
+      media: [
+        "https://example.com/images/african-print-maxi-dress-front.jpg",
+        "https://example.com/images/african-print-maxi-dress-back.jpg",
+      ],
+      category: "Clothing",
+      collections: ["64a7b9c2f3e21c1a5d6789ab"], // Example ObjectId references
+      tags: ["african", "dress", "maxi", "fashion"],
+      price: 49.99,
+      cost: 25.00,
+      colors: ["Red", "Blue", "Yellow"],
+      sizes: ["S", "M", "L", "XL"],
+    },
+    {
+      title: "Handmade Beaded Necklace",
+      description: "A stunning handmade necklace with colorful beads.",
+      media: [
+        "https://example.com/images/beaded-necklace.jpg",
+      ],
+      category: "Jewelry",
+      collections: ["64a7b9c2f3e21c1a5d6789ac"], // Example ObjectId references
+      tags: ["handmade", "necklace", "beads", "accessories"],
+      price: 19.99,
+      cost: 8.50,
+      colors: ["Multicolor"],
+      sizes: ["One Size"],
+    },
+    {
+      title: "Leather Sandals",
+      description: "Comfortable and stylish leather sandals.",
+      media: [
+        "https://example.com/images/leather-sandals.jpg",
+      ],
+      category: "Footwear",
+      collections: ["64a7b9c2f3e21c1a5d6789ad"], // Example ObjectId references
+      tags: ["leather", "sandals", "footwear"],
+      price: 34.99,
+      cost: 15.00,
+      colors: ["Brown", "Black"],
+      sizes: ["7", "8", "9", "10", "11"],
+    },
+  ];
+  

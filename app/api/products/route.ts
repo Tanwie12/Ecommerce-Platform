@@ -11,6 +11,7 @@ export const POST=async(req: NextRequest)=>{
         }
         await connectToDB()
         const {title,description,media,category,collections,tags,sizes,price,cost,colors } = await req.json();
+        console.log(title,description,media,category,collections,tags,sizes,price,cost,colors);
    
         if(!title || !description || !media || !category  || !price || !cost){
             return NextResponse.json("Not enough dat to create product fille all field", { status: 400 });

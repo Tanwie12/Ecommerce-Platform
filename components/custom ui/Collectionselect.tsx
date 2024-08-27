@@ -12,43 +12,45 @@ interface CollectionType {
 interface CollectionSelectProps {
   value: string[];
   onChange: (value: string[]) => void;
-  InitialCollections?: CollectionType[];
+  collections: CollectionType[];
+  state:boolean
 }
 
 const CollectionSelect: React.FC<CollectionSelectProps> = ({
   value,
   onChange,
-  InitialCollections = [],
+  collections,
+  state
 }) => {
-  const [collections, setCollections] = useState<CollectionType[]>(InitialCollections);
-  const [loading, setLoading] = useState(!InitialCollections?.length);
+  // const [collections, setCollections] = useState<CollectionType[]>(collections);
+  // const [loading, setLoading] = useState(!collections?.length);
   
-  const initialTitles = InitialCollections?.map(collection => collection.title) || [];
+   const initialTitles = collections?.map(collection => collection.title) || [];
 
-  useEffect(() => {
-    if (!InitialCollections?.length) {
-      const fetchCollections = async () => {
-        try {
-          const res = await fetch("/api/collections");
-          if (!res.ok) {
-            throw new Error("Failed to fetch collections");
-          }
-          const data = await res.json();
-          setCollections(data);
-        } catch (error: any) {
-          toast.error(error.message || "Something went wrong");
-        } finally {
-          setLoading(false);
-        }
-      };
+  // useEffect(() => {
+  //   if (!collections?.length) {
+  //     const fetchCollections = async () => {
+  //       try {
+  //         const res = await fetch("/api/collections");
+  //         if (!res.ok) {
+  //           throw new Error("Failed to fetch collections");
+  //         }
+  //         const data = await res.json();
+  //         setCollections(data);
+  //       } catch (error: any) {
+  //         toast.error(error.message || "Something went wrong");
+  //       } finally {
+  //         setLoading(false);
+  //       }
+  //     };
 
-      fetchCollections();
-    } else {
-      setLoading(false);
-    }
-  }, [InitialCollections]);
+  //     fetchCollections();
+  //   } else {
+  //     setLoading(false);
+  //   }
+  // }, [collections]);
 
-  const options: SelectProps['options'] = collections.map(collection => ({
+  const options: SelectProps['options'] = collections?.map(collection => ({
     label: collection.title,
     value: collection._id,
   }));
@@ -57,7 +59,7 @@ const CollectionSelect: React.FC<CollectionSelectProps> = ({
     <Select
       mode="multiple"
       allowClear
-      loading={loading}
+      loading={state}
       style={{ width: '100%' }}
       placeholder="Please select"
       value={value.length ? value : initialTitles}
